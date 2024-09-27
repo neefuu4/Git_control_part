@@ -12,8 +12,8 @@ router.patch("/esl_linkESL", async (req, res) => {
     //const { ID } = req.params;
     //let { ID } = req.body
     
-    var eslCode = req.body.eslCode
-    var itemid = req.body.itemid
+    var eslCode = "N4074190701913284"
+    var itemid = "A12"
 
     const json = ({
       barcode: eslCode,  
