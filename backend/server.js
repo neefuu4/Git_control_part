@@ -36,8 +36,10 @@ app.get("/api/test", (req, res) => {
 
 
 
-app.use("/api/component_part", require("./api/api_control_part"));
+app.use("/api/receive_part", require("./api/api_receive_part"));
 app.use("/api/master", require("./api/api_master"));
+app.use("/api/issue_part", require("./api/api_issue_part "));
+
 
 //NAS
 const Url = "192.168.101.13";

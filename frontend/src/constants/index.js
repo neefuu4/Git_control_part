@@ -100,8 +100,8 @@ TEST_PART_URL: `api/test`,
 
 //Master 
 MASTER_COMPONENT_URL: `api/Master`,
-COMPONENT_URL: `api/component_part`,
-
+COMPONENT_URL: `api/receive_part`,
+ISUUEPART_URL: `api/issue_part`,
 
 
 
