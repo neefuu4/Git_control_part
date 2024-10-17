@@ -12,18 +12,17 @@ router.patch("/esl_linkESL", async (req, res) => {
     const http = require("http");
     //const { ID } = req.params;
     //let { ID } = req.body
-<<<<<<< HEAD
-    
-    var eslCode = "N4074190701913284"
-    var itemid = "A12"
-=======
->>>>>>> upstream/main
+    // <<<<
+    //     var eslCode = "N4074190701913284"
+    //     var itemid = "A12"
+    // =======
+    // >>>>>>> upstream/main
 
     var eslCode = req.body.eslCode;
     var itemid = req.body.itemid;
 
     const json = {
-      barcode:  properties.barcode,
+      barcode: properties.barcode,
 
       links: [
         {
@@ -33,23 +32,27 @@ router.patch("/esl_linkESL", async (req, res) => {
           PART_NO: properties.PART_NO,
           Vendor: properties.Vendor,
           itemId: properties.itemId,
-          ITEMIPF: "Tag2",
+          MO1: "",
+          MO2: "",
+          MO3: "",
+          QTY: "",
+          ITEMIPF: "A1",
         },
       ],
     };
     console.log(json);
-    // let result_linkESL = await axios.patch(
-    //   "http://192.168.101.119:3333/api/public/core/v1/labels",
-    //   json,
-    //   {
-    //     headers: { "Content-Type": "application/json" },
-    //     auth: {username: "config", password: "config"},
-    //   }
-    // );
+    let result_linkESL = await axios.patch(
+      "http://192.168.101.119:3333/api/public/core/v1/labels",
+      json,
+      {
+        headers: { "Content-Type": "application/json" },
+        auth: { username: "config", password: "config" },
+      }
+    );
 
     res.json({
       //result_updateQty,
-      // result_linkESL: result_linkESL.data,
+      result_linkESL: result_linkESL.data,
       api_result: constants.OK,
     });
   } catch (error) {

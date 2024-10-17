@@ -235,31 +235,28 @@ router.patch("/esl_addItem", async (req, res) => {
     const itemDetails = {
       itemId: itemId,
       properties: {
+        PART_NO:"1116-840-00010",
         MO_DL: properties.MO_DL,
         Part: properties.Part,
-<<<<<<< HEAD:backend/api/api_control_part.js
-        ["MO" + number_txt] : MOnumber,
-=======
         vendor:properties.vendor,
         ["MO" + number_txt]: MOnumber,
->>>>>>> upstream/main:backend/api/api_receive_part.js
         QTY: totalQTY,
       },
     };
 
     console.log(itemDetails);
 
-    // const result_addItem = await axios.patch(
-    //   "http://192.168.101.119:3333/api/public/core/v1/items",
-    //   itemDetails,
-    //   {
-    //     headers: { "Content-Type": "application/json" },
-    //     auth: {
-    //       username: process.env.API_USERNAME || "config",
-    //       password: process.env.API_PASSWORD || "config",
-    //     },
-    //   }
-    // );
+    const result_addItem = await axios.patch(
+      "http://192.168.101.119:3333/api/public/core/v1/items",
+      itemDetails,
+      {
+        headers: { "Content-Type": "application/json" },
+        auth: {
+          username: process.env.API_USERNAME || "config",
+          password: process.env.API_PASSWORD || "config",
+        },
+      }
+    );
 // console.log("vendor"+vendor);
 // console.log("Model"+Model);
 // console.log("partname"+ partname);
