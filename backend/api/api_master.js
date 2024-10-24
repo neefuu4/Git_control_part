@@ -2,7 +2,63 @@
 const express = require("express");
 const router = express.Router();
 const user = require("../database/models/user"); //10
+router.patch("/esl_linkESL2", async (req, res) => {
+  try {
+    const axios = require("axios");
+    const fs = require("fs");
+    const https = require("https");
+    const http = require("http");
+    //const { ID } = req.params; 
+    //let { ID } = req.body
 
+    var eslCode = req.body.eslCode
+    var itemid = req.body.itemid
+
+    const json = ({
+      barcode: "N4074190704213280",
+
+
+      links: [
+        {
+          barcode: "N4074190704213280",
+          itemId: "A13",
+        
+          // PART: "RAMP",
+          // VENDOR :"NOK"
+          // QTY :
+          // MO1:
+          // MO2:
+          // MO3:
+          // MO_DL:
+          // PART_NO:
+        }
+      ]
+    })
+
+    let result_linkESL = await axios.patch(
+      "http://192.168.101.119:3333/api/public/core/v1/labels",
+      json,
+      {
+        headers: { "Content-Type": "application/json" },
+        auth: { username: "config", password: "config" },
+      }
+    );
+
+    res.json({
+      //result_updateQty,
+      result_linkESL: result_linkESL.data,
+      api_result: constants.OK,
+
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      error,
+      api_result: constants.NOK,
+
+    });
+  }
+});
 router.patch("/esl_linkESL", async (req, res) => {
   try {
     const { itemId, properties } = req.body;
@@ -27,16 +83,9 @@ router.patch("/esl_linkESL", async (req, res) => {
       links: [
         {
           barcode: properties.barcode,
-          MO_DL: properties.MO_DL,
-          Part: properties.Part,
-          PART_NO: properties.PART_NO,
-          Vendor: properties.Vendor,
           itemId: properties.itemId,
-          MO1: "",
-          MO2: "",
-          MO3: "",
-          QTY: "",
-          ITEMIPF: "A1",
+          
+          
         },
       ],
     };
@@ -49,7 +98,43 @@ router.patch("/esl_linkESL", async (req, res) => {
         auth: { username: "config", password: "config" },
       }
     );
+    console.log("Start");
+    // get data and inset to data
+    // Create or modify itemDetails based on the incoming data
+       const itemDetails = {
+        itemId: properties.itemId || " ",  // Use incoming itemId or default value
+        properties: {
+          // itemName: itemName || "DefaultName",  // Use incoming itemName or default value
+          MO_DL: properties.MO_DL,
+          Part: properties.Part,
+          PART_NO: properties.PART_NO,
+          Vendor: properties.Vendor,
+          MO1: "",
+          MO2: "",
+          MO3: "",
+          QTY: "0",
+          // Add more properties as needed
+        }
+      };
+    console.log(itemDetails);
 
+    let result_addItem = await axios.patch(
+      "http://192.168.101.119:3333/api/public/core/v1/items",
+      itemDetails,
+      {
+        headers: { "Content-Type": "application/json" },
+        auth: {
+          username: process.env.API_USERNAME || "config",
+          password: process.env.API_PASSWORD || "config"
+        }
+      }
+    );
+
+    console.log("Result add"+result_addItem.data);
+    res.json({
+      result_addItem: result_addItem.data,
+      api_result: constants.OK
+    });
     res.json({
       //result_updateQty,
       result_linkESL: result_linkESL.data,

@@ -235,7 +235,7 @@ router.patch("/esl_addItem", async (req, res) => {
     const itemDetails = {
       itemId: itemId,
       properties: {
-        PART_NO:"1116-840-00010",
+        // PART_NO:"1116-840-00010",
         MO_DL: properties.MO_DL,
         Part: properties.Part,
         vendor:properties.vendor,
