@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { server } from "constants";
 import { httpClient } from "utils/HttpClient.js";
 import Checkbox from "@mui/material/Checkbox"; // After installing MUI
+import Swal from "sweetalert2";
 
 import {
   Modal,
@@ -22,6 +23,10 @@ import SimpleFooter from "components/Footers/SimpleFooter.js";
 class Profile extends Component {
   constructor(props) {
     super(props);
+    // Create a ref for the ESL Tag input
+    this.eslTagRef = React.createRef();
+    this.labeltag = React.createRef();
+
     this.state = {
       moNumber: "",
       model: "",
@@ -44,8 +49,11 @@ class Profile extends Component {
       selectedItems: [], // State to track selected checkboxes
       notificationModal: false,
       inputValues: {},
-      dataEntries3: [], // Array to store objects of each entry
+      updatedData: "", // State to hold the updated data
+      afterL: "",
     };
+    // Create refs for all input fields
+    this.inputRefs = [];
   }
   toggleModal = (modal) => {
     this.setState((prevState) => ({ [modal]: !prevState[modal] }));
@@ -55,7 +63,7 @@ class Profile extends Component {
     const selectedEntries = this.state.Raw_Dat.filter(
       (item) => this.state.selectedItems.includes(item.ID) // Adjust ID to your data structure
     );
-    this.setState({ dataEntries: selectedEntries, notificationModal: true }); // Show modal with selected entries
+    this.setState({ dataEntries2: selectedEntries, notificationModal: true }); // Show modal with selected entries
   };
 
   handleSaveData = () => {
@@ -90,13 +98,13 @@ class Profile extends Component {
     };
 
     this.setState((prevState) => ({
-      dataEntries: [...prevState.dataEntries, newDataEntry],
+      dataEntries2: [...prevState.dataEntries2, newDataEntry],
       counter: prevState.counter + 1,
     }));
   };
   clearDataEntries = () => {
     this.setState({
-      dataEntries: [], // Reset the array to an empty array
+      dataEntries2: [], // Reset the array to an empty array
       counter: 0, // Optionally reset the counter if needed
     });
   };
@@ -166,7 +174,6 @@ class Profile extends Component {
       console.error("Error fetching data", error);
     }
   };
-
   // Method to check if an item matches the search query across all columns
   isMatch = (item, searchQuery) => {
     const searchValue = searchQuery.toLowerCase();
@@ -279,7 +286,7 @@ class Profile extends Component {
       </div>
     );
   };
-  fetchDatalabel = async (data,Index) => {
+  fetchDatalabel = async (data, Index) => {
     console.log(data);
     try {
       const response = await httpClient.get(
@@ -317,31 +324,74 @@ class Profile extends Component {
               a.Mo_number < b.Mo_number ? -1 : a.Mo_number > b.Mo_number ? 1 : 0
             )
             .map((entry, index) => {
+              // console.log(index);
               // Check the status from dataEntries2 instead of entry
               const updatedEntry = dataEntries2[index] || entry;
 
+              // console.log(updatedEntry2);
               let labelPartStyle = {
                 fontSize: "19px",
                 textAlign: "center",
                 borderColor: "#ced4da", // Default grey
                 backgroundColor: "white", // Default white
               };
+              // console.log(updatedEntry);
+              let eslTagStyle = "";
+              try {
+                eslTagStyle = {
+                  fontSize: "19px",
+                  textAlign: "center",
+                  borderColor:
+                    updatedEntry.eslTagStatus === "success"
+                      ? "#28a745"
+                      : updatedEntry.eslTagStatus === "error"
+                      ? "#dc3545"
+                      : "#ced4da",
+                  backgroundColor:
+                    updatedEntry.eslTagStatus === "success"
+                      ? "#d4edda"
+                      : updatedEntry.eslTagStatus === "error"
+                      ? "#f8d7da"
+                      : "white",
+                };
+              } catch (error) {
+                eslTagStyle = {
+                  fontSize: "19px",
+                  textAlign: "center",
+                  borderColor: "#ced4da", // Default grey
+                  backgroundColor: "white", // Default white
+                };
+              }
 
-              let eslTagStyle = {
-                fontSize: "19px",
-                textAlign: "center",
-                borderColor: "#ced4da", // Default grey
-                backgroundColor: "white", // Default white
-              };
-              let MOTagStyle = {
-                fontSize: "19px",
-                textAlign: "center",
-                borderColor: "#ced4da", // Default grey
-                backgroundColor: "white", // Default white
-              };
-              console.log(updatedEntry);
-              // Check if `updatedEntry.num` equals "1"
-              if (updatedEntry.num === 1) {
+              let MOTagStyle = "";
+              try {
+                MOTagStyle = {
+                  fontSize: "19px",
+                  textAlign: "center",
+                  borderColor:
+                    updatedEntry.MOTagStyle === "success"
+                      ? "#28a745"
+                      : updatedEntry.MOTagStyle === "error"
+                      ? "#dc3545"
+                      : "#ced4da",
+                  backgroundColor:
+                    updatedEntry.MOTagStyle === "success"
+                      ? "#d4edda"
+                      : updatedEntry.MOTagStyle === "error"
+                      ? "#f8d7da"
+                      : "white",
+                };
+              } catch (error) {
+                MOTagStyle = {
+                  fontSize: "19px",
+                  textAlign: "center",
+                  borderColor: "#ced4da", // Default grey
+                  backgroundColor: "white", // Default white
+                };
+              }
+
+              // console.log(updatedEntry);
+              if (updatedEntry.num == 1) {
                 labelPartStyle = {
                   ...labelPartStyle, // Keep existing properties
                   borderColor:
@@ -357,44 +407,49 @@ class Profile extends Component {
                       ? "#f8d7da" // Light red for error
                       : "white", // White for neutral
                 };
-              } else if (updatedEntry.num === 2) {
-                console.log(updatedEntry.eslTagStyleStatus);
+              } else if (updatedEntry.num == 2) {
+                // console.log(updatedEntry.eslTagStatus);
                 eslTagStyle = {
                   ...eslTagStyle, // Keep existing properties
                   borderColor:
-                    updatedEntry.eslTagStyleStatus === "success"
+                    updatedEntry.eslTagStatus === "success"
                       ? "#28a745" // Green for success
-                      : updatedEntry.eslTagStyleStatus === "error"
+                      : updatedEntry.eslTagStatus === "error"
                       ? "#dc3545" // Red for error
                       : "#ced4da", // Grey for neutral
                   backgroundColor:
-                    updatedEntry.eslTagStyleStatus === "success"
+                    updatedEntry.eslTagStatus === "success"
                       ? "#d4edda" // Light green for success
-                      : updatedEntry.eslTagStyleStatus === "error"
+                      : updatedEntry.eslTagStatus === "error"
                       ? "#f8d7da" // Light red for error
                       : "white", // White for neutral
                 };
+                // console.log(eslTagStatus);
               } else if (updatedEntry.num === 3) {
                 MOTagStyle = {
-                  ...eslTagStyle, // Keep existing properties
+                  ...MOTagStyle, // Keep existing properties
                   borderColor:
-                    updatedEntry.labelPartStatus === "success"
+                    updatedEntry.MOTagStyle === "success"
                       ? "#28a745" // Green for success
-                      : updatedEntry.labelPartStatus === "error"
+                      : updatedEntry.MOTagStyle === "error"
                       ? "#dc3545" // Red for error
                       : "#ced4da", // Grey for neutral
                   backgroundColor:
-                    updatedEntry.labelPartStatus === "success"
+                    updatedEntry.MOTagStyle === "success"
                       ? "#d4edda" // Light green for success
-                      : updatedEntry.labelPartStatus === "error"
+                      : updatedEntry.MOTagStyle === "error"
                       ? "#f8d7da" // Light red for error
                       : "white", // White for neutral
                 };
               }
-
-              // console.log('labelPartStyle:', labelPartStyle);
-              // console.log('eslTagStyle:', eslTagStyle);
-
+              // Check if input refs are already created for this index
+              if (!this.inputRefs[index]) {
+                this.inputRefs[index] = {
+                  MOTag: React.createRef(),
+                  eslTag: React.createRef(),
+                  labelPart: React.createRef(),
+                };
+              }
               return (
                 <div key={index} style={{ marginBottom: "15px" }}>
                   <h5 style={{ color: "white" }}>
@@ -405,19 +460,41 @@ class Profile extends Component {
                     {updatedEntry.IQC_number || "No IQC Data"} / Model:{" "}
                     {updatedEntry.Model || "No Model Data"} / Vendor:{" "}
                     {updatedEntry.Vendor || "No Vendor Data"} / QTY:{" "}
-                    {updatedEntry.QTY || "No Data"} / Pack:
+                    {updatedEntry.QTY || "No Data"}/ L : {updatedEntry.L_part}
                   </h5>
+                  {/* <h5> Pack : {this.state.updatedData} </h5> */}
+                  <FormGroup>
+                    <Input
+                      className="form-control-alternative-center"
+                      placeholder="Scan MO Tag"
+                      type="text"
+                      innerRef={this.MOTag} // Ref for the second input"
+                      style={MOTagStyle}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          // Focus the ESL Tag input
+                          this.inputRefs[index].eslTag.current.focus(); // Focus ESL Tag input
+                          // Check if the Enter key is pressed
+                          this.handleKeyDown(index, event, updatedEntry, 3);
+                        }
+                      }}
+                    />
+                    {/* ESL Tag Input (similar style as above) */}
+                  </FormGroup>
 
                   <FormGroup>
                     <Input
                       className="form-control-alternative-center"
                       placeholder="Scan ESL Tag"
                       type="text"
+                      innerRef={this.inputRefs[index].eslTag} // Use dynamic ref
+                      // ref={this.eslTagRef} // Assign the ref here
                       style={eslTagStyle}
                       onKeyDown={(event) => {
-                        if (event.key === "Enter" ) { // Check if the Enter key is pressed
+                        if (event.key === "Enter") {
+                          // Check if the Enter key is pressed
                           this.handleKeyDown(index, event, updatedEntry, 2);
-          
+                          this.inputRefs[index].labelPart.current.focus(); // Focus Label Part input
                         }
                       }}
                     />
@@ -430,24 +507,15 @@ class Profile extends Component {
                       placeholder="Scan label part"
                       type="text"
                       style={labelPartStyle}
+                      innerRef={this.inputRefs[index].labelPart} // Use dynamic ref
                       onKeyDown={(event) =>
                         this.handleKeyDown(index, event, updatedEntry, 1)
                       }
-                    />
-                    {/* ESL Tag Input (similar style as above) */}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Input
-                      className="form-control-alternative-center"
-                      placeholder="Scan MO Tag"
-                      type="text"
-                      style={MOTagStyle}
-                      onKeyDown={(event) =>
-                        this.handleKeyDown(index, event, updatedEntry, 3)
-                      }
-                    />
-                    {/* ESL Tag Input (similar style as above) */}
+                    />{" "}
+                    <h3 style={{ color: "white" }}>
+                      {" "}
+                      {updatedEntry.countertxt} / {updatedEntry.Pack}
+                    </h3>
                   </FormGroup>
                 </div>
               );
@@ -458,10 +526,15 @@ class Profile extends Component {
       </div>
     );
   };
-
+  handleClose = () => {
+    this.setState({
+      dataEntries2: [],
+      selectedItems: [],
+    });
+  };
   handleKeyDown = async (index, event, entry, num) => {
     const { inputValues } = this.state;
-    console.log(num);
+
     // Update the state with the new input values
     const newInputValues = {
       ...inputValues,
@@ -474,124 +547,297 @@ class Profile extends Component {
     if (event.key === "Enter") {
       try {
         let result = "";
-
         if (num === 1) {
-          // Scan label part
-          let sanitizedModel;
-          try {
-            sanitizedModel = entry.Model ? entry.Model.replace(/\//g, "-") : "";
-          } catch {
-            sanitizedModel = entry.Model;
-          }
+          // console.log(parseInt(this.state.counter, 10) +"A :"+ parseInt(this.state.updatedData, 10));
 
+          // Scan label part
+          const sanitizedModel = entry.Model;
+          let counter = 0; // Initialize counter for the scan attempts
+          let scanSuccess = false; // Flag to check if scan was successful
+
+          let result;
           for (let i = 9; i <= 15; i++) {
             const substringValue = value.substring(0, i); // Extract substring from 0 to `i`
 
             try {
-              // Make the HTTP request using the substring
+              // Increment the counter for each scan attempt
               result = await httpClient.get(
                 `${server.COMPONENT_URL}/label_tray/${sanitizedModel}/${entry.Vendor}/${entry.Part_name}/${entry.Part_number}/${entry.Mold}/${substringValue}`
               );
-              //console.log(result);
-              // Check the result's Model property
-              if (result.data.result[0].Model) {
-                console.log("Model found, breaking the loop");
-                break; // Exit the loop if a valid Model is found
+              console.log(result.data.result[0].Model);
+
+              // If a valid model is found, set success flag and break out of the loop
+              if (result.data.result[0].Model !== "") {
+                scanSuccess = true; // Mark the scan as successful
+
+                break;
               }
             } catch (error) {
+              this.setState((prevState) => {
+                const updatedEntries = [...prevState.dataEntries2];
+
+                updatedEntries[index] = {
+                  ...updatedEntries[index], // Spread the existing entry
+                  num: 1,
+                  labelPartStatus: "error",
+                  // countertxt: updatedEntries[index].countertxt || 0, // Ensure it’s a number
+                };
+
+                return { dataEntries2: updatedEntries };
+              });
+              event.target.value = "";
               console.error(
                 `Error occurred for substring "${substringValue}":`,
                 error
               );
             }
           }
+          // Assuming result has been retrieved correctly
+          const modelExists = result.data.result[0].Model; // Check if Model exists
+          // Clear input field after scanning process
+          event.target.value = "";
           try {
+            if (modelExists !== "") {
+              this.setState((prevState) => {
+                const updatedEntries = [...prevState.dataEntries2];
+                const newCountertxt =
+                  (parseInt(updatedEntries[index].countertxt, 10) || 0) - 1;
+
+                if (
+                  newCountertxt ==
+                  parseInt(updatedEntries[index].Pack, 10) - 1
+                ) {
+                  alert("stoppp !! !");
+                } else {
+                  // Safely increment countertxt
+                  const currentCountertxt =
+                    updatedEntries[index].countertxt || 0; // Fallback to 0 if undefined
+                  const newCountertxt = currentCountertxt + 1; // Increment the counter
+
+                  updatedEntries[index] = {
+                    ...updatedEntries[index], // Spread the existing entry
+                    num: 1,
+                    labelPartStatus: "success",
+                    countertxt: newCountertxt, // Update countertxt
+                  };
+
+                  return { dataEntries2: updatedEntries };
+                }
+              });
+            } else {
+              this.setState((prevState) => {
+                const updatedEntries = [...prevState.dataEntries2];
+
+                updatedEntries[index] = {
+                  ...updatedEntries[index], // Spread the existing entry
+                  num: 1,
+                  labelPartStatus: "error",
+                  countertxt: updatedEntries[index].countertxt || 0, // Ensure it’s a number
+                };
+
+                return { dataEntries2: updatedEntries };
+              });
+            }
+          } catch {
+            alert("No data !! !");
+          }
+          // } else {
+          //   alert("stop !");
+          // }
+        } else if (num === 2) {
+          // Scan ESL Tag
+          if (value === entry.ESL_number) {
             this.setState((prevState) => {
               const updatedEntries = [...prevState.dataEntries2];
-              const modelExists = result?.data?.result?.[0]?.Model; // Check if Model exists
               updatedEntries[index] = {
                 ...entry,
-                num: 1,
-                labelPartStatus: modelExists ? "success" : "error", // Update label part status based on Model existence
+                eslTagStatus: "success",
+                num: 2,
               };
               return { dataEntries2: updatedEntries };
             });
-          } catch (error) {
-            console.error("Error updating state: ", error); // Log the error for debugging
+          } else {
+            this.setState((prevState) => {
+              const updatedEntries = [...prevState.dataEntries2];
+              updatedEntries[index] = {
+                ...entry,
+                eslTagStatus: "error",
+                num: 2,
+              };
+              return { dataEntries2: updatedEntries };
+            });
           }
-        } else if (num == "2") {
-
+        } else if (num === 3) {
           // Scan label esl
- 
           let sanitizedModel = entry.Model;
+          let pack = 0;
+          let currentQty = 0; // Define currentQty outside of try block
+          let previousQty = 0; // Define previousQty outside of try block
+          let cal_LAfter = 0;
           try {
-            sanitizedModel = entry.Model ? entry.Model.replace(/\//g, "-") : "";
-          } catch {
-            sanitizedModel = entry.Model;
-          }
-
-          // Example usage: logging or setting state
-          try {
-            // Make the HTTP request using the substring
             const result = await httpClient.get(
               `${server.ISUUEPART_URL}/label_tray_QTY/${sanitizedModel}/${entry.Vendor}/${entry.Part_name}/${entry.Part_number}/${entry.Mold}`
             );
-            console.log(result);
-            // Check the result's Model property
-            if (result.data.result[0].Qty_per_bundle !== "") {
-             
-           
-            }else {
-              // const starttt = result.data.result[0].Qty_per_pack ;
+
+            const result_beforeL = await httpClient.get(
+              `${server.ISUUEPART_URL}/Bafore_L/${sanitizedModel}/${entry.Vendor}/${entry.Part_name}/${entry.Part_number}/${entry.Mold}`
+            );
+
+            previousQty = result_beforeL.data.result[0]?.Over_issue_L || 0; // Default to 0 if not found
+            currentQty = result.data.result[0]?.Qty_per_bundle || 0; // Default to 0 if not found
+            const currentQty2 = entry.QTY + previousQty;
+
+            if (currentQty) {
+              // Check if currentQty is a valid number
+              pack = Math.ceil(currentQty2 / currentQty);
             }
+            cal_LAfter = pack * currentQty - currentQty2;
+            // this.setState({ afterL: -cal_LAfter  }); // Show modal with selected entries
+            // this.setState({ updatedData: pack }); // Show modal with selected entries
           } catch (error) {
-           
+            console.error("Error fetching quantity data:", error);
           }
 
+          const inputValue = event.target.value;
+          const splitData = inputValue.split("|");
+
           try {
-            // console.log(entry);
-            if (value === entry.ESL_number) {
+            if (
+              splitData[1] === entry.Mo_number &&
+              splitData[2] === entry.Part_number &&
+              splitData[3] === entry.Part_name &&
+              splitData[4] === entry.IQC_number
+            ) {
               this.setState((prevState) => {
                 const updatedEntries = [...prevState.dataEntries2];
-                // const modelExists = result?.data?.result?.[0]?.Model; // Check if Model exists
+                console.log(updatedEntries);
+                const updatedEntry1 = updatedEntries[index] || entry;
+                const updatedEntry2 = updatedEntries[index - 1] || entry;
+                console.log(index);
+                if (
+                  index > 0 &&
+                  updatedEntry1.Model === updatedEntry2.Model &&
+                  updatedEntry1.Part_name === updatedEntry2.Part_name &&
+                  updatedEntry1.Vendor === updatedEntry2.Vendor
+                ) {
+                  const oldSum =
+                    parseInt(updatedEntry1.QTY, 10) +
+                    parseInt(updatedEntry2.L_part, 10);
+                  // console.log(oldSum);
+                  if (oldSum < 0) {
+                    cal_LAfter = oldSum;
+                    pack = 0;
+                  } else {
+                    pack = Math.ceil(oldSum / currentQty);
+                    cal_LAfter = Math.ceil(pack * currentQty) - oldSum;
+                  }
+                }
+                console.log(updatedEntry2);
                 updatedEntries[index] = {
                   ...entry,
-                  num: 2,
-                  eslTagStyleStatus: "success", // Update label part status based on Model existence
+                  num: 3,
+                  Pack: pack, // Update the Pack value in state
+                  L_part: "-" + cal_LAfter,
+                  MOTagStyle: "success",
                 };
-                console.log(updatedEntries);
                 return { dataEntries2: updatedEntries };
               });
             } else {
               this.setState((prevState) => {
                 const updatedEntries = [...prevState.dataEntries2];
-                // const modelExists = result?.data?.result?.[0]?.Model; // Check if Model exists
                 updatedEntries[index] = {
                   ...entry,
-                  num: 2,
-                  eslTagStyleStatus: "error", // Update label part status based on Model existence
+                  num: 3,
+                  MOTagStyle: "error",
                 };
-                console.log(updatedEntries);
                 return { dataEntries2: updatedEntries };
               });
             }
           } catch (error) {
-            console.error("Error updating state: ", error); // Log the error for debugging
+            console.error("Error updating state: ", error);
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
-        this.setState((prevState) => {
-          const updatedEntries = [...prevState.dataEntries2];
-          updatedEntries[index] = {
-            ...entry,
-            [num === 1 ? "labelPartStatus" : "eslTagStatus"]: "error", // Set status on error
-          };
-          return { dataEntries2: updatedEntries };
-        });
+        console.error("Error in handleKeyDown:", error);
       }
     }
   };
+  handleClick_els = async () => {
+    const { inputValues, dataEntries } = this.state;
+    // Collect data from the input fields
+    const collectedData = dataEntries.map((entry, index) => ({
+      ...entry,
+      labelPartValue: inputValues[`${index}-1`] || "", // Value from label part textbox
+      eslTagValue: inputValues[`${index}-2`] || "", // Value from ESL Tag textbox
+    }));
+    // Log the collected data
+    // console.log("Collected data :", collectedData);
+
+    // Convert collected data to JSON format
+    const jsonData = JSON.stringify(collectedData);
+    console.log("jsonData data :", jsonData);
+    // Loop through collected data and send PATCH requests for each entry
+    collectedData.forEach(async (item) => {
+      try {
+        const splittedMoNumber = item.moNumber.split("-"); // Modify the delimiter as needed
+        console.log(item);
+        //Update ESL Tag    
+        const response = await httpClient.patch(
+          // Ensure "patch" is lowercase
+          `${server.COMPONENT_URL}/esl_addItem`, // URL
+          {
+            itemId: item.Rack_number, // Access Rack_number from each item
+            properties: {
+              MO_DL: item.model, // Access model
+              vendor:item.vendor,
+              Part: item.partname, // Access partname
+              QTY: item.qty, // Access the first part of the split moNumber
+              ["MO" + item.Number_MO]: "", // Access the first part of the split moNumber
+              Number: item.Number_MO,
+              iqcNumber: item.iqcNumber,
+              // You can access more parts of the split moNumber as needed (e.g., splittedMoNumber[1])
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json", // Ensure content type is set to JSON
+            },
+          }
+        );
+
+        //Insert data
+        // const response_insert = await httpClient.get(
+        //   `${server.ISUUEPART_URL}/insert/${data.Model}/${data.Vendor}/${data.Part_name}/${data.Part_number}/${data.Mold}/{$data.OverL}/{}`
+        // );
+        // console.log(response_insert);
+
+        console.log(
+          `PATCH response for item ${item.Rack_number}:`,
+          response.data
+        );
+        this.clearInput();
+        // Define the action to take when the button is clicked
+        Swal.fire({
+          icon: "success",
+          title: "Good job!",
+          text: "Ok, Got it!",
+          confirmButtonText: "Close",
+        });
+      } catch (error) {
+        console.error(
+          `Error during PATCH request for item ${item.Rack_number}:`,
+          error
+        );
+        Swal.fire({
+          title: "Error!",
+          icon: "error",
+          text: "Ok, Got it!",
+          confirmButtonText: "Close",
+        });
+      }
+    });
+  };
+
 
   render() {
     return (
@@ -700,17 +946,17 @@ class Profile extends Component {
                             >
                               Selected Items
                             </h6>
-                            <button
+                            {/* <button
+                              style={clearButtonStyle}
                               aria-label="Close"
                               className="close"
                               data-dismiss="modal"
                               type="button"
-                              onClick={() =>
-                                this.toggleModal("notificationModal")
-                              }
-                            >
-                              <span aria-hidden={true}>×</span>
-                            </button>
+                              onClick={() => {
+                                this.toggleModal("notificationModal");
+                              
+                              }}
+                            ></button> */}
                           </div>
 
                           <div className="modal-body">
@@ -731,9 +977,19 @@ class Profile extends Component {
                               className="btn-white"
                               color="default"
                               type="button"
-                              onClick={() =>
-                                this.toggleModal("notificationModal")
-                              }
+                              onClick={this.handleClick_els}
+                            >
+                              Ok, Got it
+                            </Button>
+                            <Button
+                              className="text-white ml-auto"
+                              color="link"
+                              data-dismiss="modal"
+                              type="button"
+                              onClick={() => {
+                                this.clearInput();
+                                this.toggleModal("notificationModal");
+                              }}
                             >
                               Close
                             </Button>
@@ -754,7 +1010,7 @@ class Profile extends Component {
                     </Row>
                   </div>
                   <ul>
-                    {this.state.dataEntries.map((entry, index) => (
+                    {this.state.dataEntries2.map((entry, index) => (
                       <li key={index}>
                         <div>
                           <strong>MO Number:</strong> {entry.moNumber}
@@ -822,5 +1078,10 @@ const styles = {
     borderBottom: "1px solid #ddd",
     padding: "8px",
   },
+};
+const clearButtonStyle = {
+  color: "white",
+  backgroundColor: "transparent",
+  border: "none",
 };
 export default Profile;
